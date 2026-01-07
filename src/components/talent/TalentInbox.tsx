@@ -12,6 +12,9 @@ import {
   ChevronDown,
   Calendar,
   ArrowUpDown,
+  ThumbsUp,
+  ThumbsDown,
+  Meh,
 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -308,6 +311,9 @@ export function TalentInbox() {
               <th className="w-32 px-4 py-3 text-left">
                 <span className="text-label">Interview</span>
               </th>
+              <th className="w-20 px-4 py-3 text-left">
+                <span className="text-label">Result</span>
+              </th>
               <th className="w-20 px-4 py-3 text-right">
                 <span className="text-label">Activity</span>
               </th>
@@ -334,13 +340,14 @@ export function TalentInbox() {
                     <td className="px-4 py-3"><div className="w-48 h-4 bg-slate-100 rounded animate-pulse" /></td>
                     <td className="px-4 py-3"><div className="w-16 h-5 bg-slate-100 rounded animate-pulse" /></td>
                     <td className="px-4 py-3"><div className="w-20 h-4 bg-slate-100 rounded animate-pulse" /></td>
+                    <td className="px-4 py-3"><div className="w-6 h-4 bg-slate-100 rounded animate-pulse" /></td>
                     <td className="px-4 py-3"><div className="w-10 h-4 bg-slate-100 rounded animate-pulse ml-auto" /></td>
                     <td className="px-4 py-3"></td>
                   </tr>
                 ))
               ) : filteredCandidates.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-16">
+                  <td colSpan={9} className="text-center py-16">
                     <div className="flex flex-col items-center">
                       <div className="w-16 h-16 rounded-2xl bg-[var(--accent-blue-light)] flex items-center justify-center mb-4">
                         <Sparkles className="w-8 h-8 text-[var(--accent-blue)]" strokeWidth={1.5} />
@@ -410,6 +417,22 @@ export function TalentInbox() {
                           <div className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
                             <Calendar className="w-3.5 h-3.5 text-[var(--accent-blue)]" strokeWidth={1.5} />
                             <span className="font-medium">{formatInterviewDate(candidate.interview_date)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-[var(--text-muted)]">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {candidate.interview_feedback ? (
+                          <div className={cn(
+                            'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium',
+                            candidate.interview_feedback === 'good' && 'bg-emerald-50 text-emerald-700',
+                            candidate.interview_feedback === 'meh' && 'bg-amber-50 text-amber-700',
+                            candidate.interview_feedback === 'bad' && 'bg-red-50 text-red-700'
+                          )}>
+                            {candidate.interview_feedback === 'good' && <ThumbsUp className="w-3 h-3" strokeWidth={1.5} />}
+                            {candidate.interview_feedback === 'meh' && <Meh className="w-3 h-3" strokeWidth={1.5} />}
+                            {candidate.interview_feedback === 'bad' && <ThumbsDown className="w-3 h-3" strokeWidth={1.5} />}
                           </div>
                         ) : (
                           <span className="text-xs text-[var(--text-muted)]">—</span>

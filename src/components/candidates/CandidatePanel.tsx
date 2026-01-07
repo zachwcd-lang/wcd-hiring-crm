@@ -22,6 +22,12 @@ import {
   Video,
   File,
   Sparkles,
+  ThumbsUp,
+  ThumbsDown,
+  Meh,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import { AIScreeningTab } from './AIScreeningTab'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
@@ -50,10 +56,13 @@ import {
   useDeleteCandidate,
   useScheduleInterview,
   useUpdateScorecard,
+  useUpdateInterviewFeedback,
+  useUploadTranscript,
+  useAnalyzeTranscript,
 } from '@/hooks/useCandidates'
 import { useCandidateActivity } from '@/hooks/useActivity'
 import { useAppStore } from '@/store'
-import { STAGES, getDaysInPipeline, getInitials, type Stage, type Scorecard } from '@/types'
+import { STAGES, getDaysInPipeline, getInitials, type Stage, type Scorecard, type InterviewFeedback } from '@/types'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -122,11 +131,16 @@ export function CandidatePanel() {
   const deleteCandidate = useDeleteCandidate()
   const scheduleInterview = useScheduleInterview()
   const updateScorecard = useUpdateScorecard()
+  const updateInterviewFeedback = useUpdateInterviewFeedback()
+  const uploadTranscript = useUploadTranscript()
+  const analyzeTranscript = useAnalyzeTranscript()
 
   const [newNote, setNewNote] = useState('')
   const [interviewDate, setInterviewDate] = useState('')
   const [scorecard, setScorecard] = useState<Scorecard>({})
   const [activeTab, setActiveTab] = useState('overview')
+  const [expandedTranscriptId, setExpandedTranscriptId] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
     if (candidate?.scorecard) {
@@ -197,6 +211,41 @@ export function CandidatePanel() {
     const updated = { ...scorecard, [key]: value }
     setScorecard(updated)
     updateScorecard.mutate({ id: candidate.id, scorecard: updated })
+  }
+
+  const handleFeedbackChange = (feedback: InterviewFeedback) => {
+    if (!candidate) return
+    updateInterviewFeedback.mutate({ id: candidate.id, feedback, candidateName: candidate.name })
+  }
+
+  const handleTranscriptUpload = (files: FileList | null) => {
+    if (!candidate || !files || files.length === 0) return
+    const file = files[0]
+    if (!file.name.endsWith('.txt') && !file.name.endsWith('.md')) {
+      toast.error('Please upload a .txt or .md file')
+      return
+    }
+    uploadTranscript.mutate({ id: candidate.id, file, candidateName: candidate.name })
+  }
+
+  const handleAnalyzeTranscript = (transcriptId: string) => {
+    if (!candidate) return
+    analyzeTranscript.mutate({ id: candidate.id, transcriptId, candidateName: candidate.name })
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    handleTranscriptUpload(e.dataTransfer.files)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = () => {
+    setIsDragging(false)
   }
 
   const isStreamer = candidate?.position?.toLowerCase().includes('streamer')
@@ -520,6 +569,70 @@ export function CandidatePanel() {
                     </div>
                   )}
 
+                  {/* Interview Feedback */}
+                  <div className="space-y-3">
+                    <h3 className="text-label text-[var(--text-muted)]">How did it go?</h3>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleFeedbackChange('good')}
+                        disabled={updateInterviewFeedback.isPending}
+                        className={cn(
+                          'flex-1 flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all',
+                          candidate.interview_feedback === 'good'
+                            ? 'border-emerald-500 bg-emerald-50'
+                            : 'border-[var(--border)] hover:border-emerald-300 hover:bg-emerald-50/50'
+                        )}
+                      >
+                        <ThumbsUp className={cn(
+                          'w-6 h-6',
+                          candidate.interview_feedback === 'good' ? 'text-emerald-600' : 'text-[var(--text-muted)]'
+                        )} />
+                        <span className={cn(
+                          'text-sm font-medium',
+                          candidate.interview_feedback === 'good' ? 'text-emerald-700' : 'text-[var(--text-secondary)]'
+                        )}>Good</span>
+                      </button>
+                      <button
+                        onClick={() => handleFeedbackChange('meh')}
+                        disabled={updateInterviewFeedback.isPending}
+                        className={cn(
+                          'flex-1 flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all',
+                          candidate.interview_feedback === 'meh'
+                            ? 'border-amber-500 bg-amber-50'
+                            : 'border-[var(--border)] hover:border-amber-300 hover:bg-amber-50/50'
+                        )}
+                      >
+                        <Meh className={cn(
+                          'w-6 h-6',
+                          candidate.interview_feedback === 'meh' ? 'text-amber-600' : 'text-[var(--text-muted)]'
+                        )} />
+                        <span className={cn(
+                          'text-sm font-medium',
+                          candidate.interview_feedback === 'meh' ? 'text-amber-700' : 'text-[var(--text-secondary)]'
+                        )}>Meh</span>
+                      </button>
+                      <button
+                        onClick={() => handleFeedbackChange('bad')}
+                        disabled={updateInterviewFeedback.isPending}
+                        className={cn(
+                          'flex-1 flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all',
+                          candidate.interview_feedback === 'bad'
+                            ? 'border-red-500 bg-red-50'
+                            : 'border-[var(--border)] hover:border-red-300 hover:bg-red-50/50'
+                        )}
+                      >
+                        <ThumbsDown className={cn(
+                          'w-6 h-6',
+                          candidate.interview_feedback === 'bad' ? 'text-red-600' : 'text-[var(--text-muted)]'
+                        )} />
+                        <span className={cn(
+                          'text-sm font-medium',
+                          candidate.interview_feedback === 'bad' ? 'text-red-700' : 'text-[var(--text-secondary)]'
+                        )}>Bad</span>
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Schedule Form */}
                   <div className="space-y-3">
                     <h3 className="text-label text-[var(--text-muted)]">Schedule Interview</h3>
@@ -552,6 +665,160 @@ export function CandidatePanel() {
                       <ScorecardRating label="Product Knowledge" value={scorecard.product_knowledge || 0} onChange={(v) => handleScorecardChange('product_knowledge', v)} />
                       <ScorecardRating label="Tech Setup" value={scorecard.tech_setup || 0} onChange={(v) => handleScorecardChange('tech_setup', v)} />
                     </div>
+                  </div>
+
+                  {/* Interview Transcripts */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-[var(--text-muted)]" />
+                      <h3 className="text-label text-[var(--text-muted)]">Interview Transcripts</h3>
+                    </div>
+
+                    {/* Upload Dropzone */}
+                    <div
+                      onDrop={handleDrop}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      className={cn(
+                        'flex flex-col items-center justify-center py-6 px-4 rounded-lg border-2 border-dashed transition-colors text-center',
+                        isDragging ? 'border-[var(--accent)] bg-[var(--accent-subtle)]' : 'border-[var(--border)]',
+                        uploadTranscript.isPending && 'opacity-50 pointer-events-none'
+                      )}
+                    >
+                      {uploadTranscript.isPending ? (
+                        <>
+                          <Loader2 className="w-8 h-8 text-[var(--accent)] mb-3 animate-spin" />
+                          <p className="text-sm text-[var(--text-muted)]">Uploading...</p>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 text-[var(--text-muted)] mb-3" />
+                          <p className="text-sm text-[var(--text-muted)]">Drop your Granola transcript here</p>
+                          <p className="text-xs text-[var(--text-muted)] mt-1">.txt or .md files</p>
+                          <label className="mt-3">
+                            <input
+                              type="file"
+                              accept=".txt,.md"
+                              onChange={(e) => handleTranscriptUpload(e.target.files)}
+                              className="hidden"
+                            />
+                            <span className="px-3 py-1.5 text-xs font-medium text-[var(--accent)] bg-[var(--accent-subtle)] rounded-md cursor-pointer hover:bg-[var(--accent-subtle)]/80">
+                              Browse files
+                            </span>
+                          </label>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Transcript List */}
+                    {candidate.interview_transcripts && candidate.interview_transcripts.length > 0 && (
+                      <div className="space-y-2">
+                        {candidate.interview_transcripts.map((transcript) => (
+                          <div key={transcript.id} className="rounded-lg border border-[var(--border)] overflow-hidden">
+                            <div
+                              className="flex items-center gap-3 p-3 bg-[var(--background-subtle)] cursor-pointer hover:bg-[var(--background-muted)] transition-colors"
+                              onClick={() => setExpandedTranscriptId(
+                                expandedTranscriptId === transcript.id ? null : transcript.id
+                              )}
+                            >
+                              <FileText className="w-4 h-4 text-[var(--text-muted)]" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{transcript.filename}</p>
+                                <p className="text-xs text-[var(--text-muted)]">
+                                  {safeFormatDate(transcript.uploaded_at, 'MMM d, h:mm a')}
+                                </p>
+                              </div>
+                              {transcript.ai_analysis ? (
+                                <span className="px-2 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-50 rounded">
+                                  Analyzed
+                                </span>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleAnalyzeTranscript(transcript.id)
+                                  }}
+                                  disabled={analyzeTranscript.isPending}
+                                  className="h-7 text-xs"
+                                >
+                                  {analyzeTranscript.isPending ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                  ) : (
+                                    <>
+                                      <Sparkles className="w-3 h-3 mr-1" />
+                                      Analyze
+                                    </>
+                                  )}
+                                </Button>
+                              )}
+                              {expandedTranscriptId === transcript.id ? (
+                                <ChevronUp className="w-4 h-4 text-[var(--text-muted)]" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />
+                              )}
+                            </div>
+
+                            {expandedTranscriptId === transcript.id && (
+                              <div className="p-4 border-t border-[var(--border)] space-y-4">
+                                {transcript.ai_analysis ? (
+                                  <>
+                                    <div>
+                                      <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-2">Summary</h4>
+                                      <p className="text-sm text-[var(--text-primary)]">{transcript.ai_analysis.summary}</p>
+                                    </div>
+                                    <div>
+                                      <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-2">Key Points</h4>
+                                      <ul className="space-y-1">
+                                        {transcript.ai_analysis.key_points.map((point, i) => (
+                                          <li key={i} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
+                                            <span className="text-[var(--text-muted)]">•</span>
+                                            {point}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <h4 className="text-xs font-medium text-emerald-600 uppercase tracking-wide mb-2">Strengths</h4>
+                                        <ul className="space-y-1">
+                                          {transcript.ai_analysis.strengths.map((s, i) => (
+                                            <li key={i} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
+                                              <span className="text-emerald-500">+</span>
+                                              {s}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                      <div>
+                                        <h4 className="text-xs font-medium text-red-600 uppercase tracking-wide mb-2">Concerns</h4>
+                                        <ul className="space-y-1">
+                                          {transcript.ai_analysis.concerns.map((c, i) => (
+                                            <li key={i} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
+                                              <span className="text-red-500">-</span>
+                                              {c}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-[var(--background-muted)]">
+                                      <h4 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-1">Recommendation</h4>
+                                      <p className="text-sm text-[var(--text-primary)]">{transcript.ai_analysis.recommendation}</p>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="text-center py-4">
+                                    <p className="text-sm text-[var(--text-muted)]">Click "Analyze" to get AI insights on this transcript</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
 

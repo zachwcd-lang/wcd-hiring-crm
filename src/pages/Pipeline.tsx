@@ -21,6 +21,9 @@ import {
   ChevronDown,
   Check,
   ArrowUpDown,
+  ThumbsUp,
+  ThumbsDown,
+  Meh,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -582,6 +585,9 @@ export function Pipeline() {
                   <SortableHeader field="interview_date">Interview</SortableHeader>
                 </th>
                 <th className="text-left px-4 py-3 w-20">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">Result</span>
+                </th>
+                <th className="text-left px-4 py-3 w-20">
                   <SortableHeader field="stage_changed_at">Days</SortableHeader>
                 </th>
                 <th className="text-left px-4 py-3 w-24">
@@ -603,6 +609,7 @@ export function Pipeline() {
                     <td className="px-4 py-3"><div className="w-14 h-4 bg-[var(--background-muted)] rounded animate-pulse" /></td>
                     <td className="px-4 py-3"><div className="w-10 h-4 bg-[var(--background-muted)] rounded animate-pulse" /></td>
                     <td className="px-4 py-3"><div className="w-16 h-4 bg-[var(--background-muted)] rounded animate-pulse" /></td>
+                    <td className="px-4 py-3"><div className="w-6 h-4 bg-[var(--background-muted)] rounded animate-pulse" /></td>
                     <td className="px-4 py-3"><div className="w-8 h-4 bg-[var(--background-muted)] rounded animate-pulse" /></td>
                     <td className="px-4 py-3"><div className="w-12 h-4 bg-[var(--background-muted)] rounded animate-pulse" /></td>
                     <td className="px-4 py-3"><div className="w-14 h-4 bg-[var(--background-muted)] rounded animate-pulse" /></td>
@@ -610,7 +617,7 @@ export function Pipeline() {
                 ))
               ) : sortedCandidates.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-16">
+                  <td colSpan={11} className="text-center py-16">
                     <div className="text-[var(--text-muted)]">
                       <p className="text-sm">No candidates found</p>
                       <p className="text-xs mt-1">Try adjusting your filters or add a new candidate</p>
@@ -691,6 +698,24 @@ export function Pipeline() {
                           <span className="text-xs text-[var(--text-secondary)] tabular-nums">
                             {format(new Date(candidate.interview_date), 'MMM d, h:mm a')}
                           </span>
+                        ) : (
+                          <span className="text-[var(--text-muted)]">-</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {candidate.interview_feedback ? (
+                          <div className={cn(
+                            'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium',
+                            candidate.interview_feedback === 'good' && 'bg-emerald-50 text-emerald-700',
+                            candidate.interview_feedback === 'meh' && 'bg-amber-50 text-amber-700',
+                            candidate.interview_feedback === 'bad' && 'bg-red-50 text-red-700'
+                          )}>
+                            {candidate.interview_feedback === 'good' && <ThumbsUp className="w-3 h-3" />}
+                            {candidate.interview_feedback === 'meh' && <Meh className="w-3 h-3" />}
+                            {candidate.interview_feedback === 'bad' && <ThumbsDown className="w-3 h-3" />}
+                            <span className="capitalize">{candidate.interview_feedback}</span>
+                          </div>
                         ) : (
                           <span className="text-[var(--text-muted)]">-</span>
                         )}

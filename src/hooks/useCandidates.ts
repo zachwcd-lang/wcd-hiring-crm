@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import type { Candidate, Stage, Note, Scorecard } from '@/types'
+import type { Candidate, Stage, Note, Scorecard, InterviewFeedback, InterviewTranscript } from '@/types'
 import { toast } from 'sonner'
 
 // Helper to transform DB row to Candidate type
@@ -32,6 +32,8 @@ function transformCandidate(row: Record<string, unknown>): Candidate {
     ai_analysis: row.ai_analysis as Candidate['ai_analysis'],
     screening_answers: row.screening_answers as Candidate['screening_answers'],
     ai_screened_at: row.ai_screened_at as string | null,
+    interview_feedback: row.interview_feedback as InterviewFeedback | null,
+    interview_transcripts: (row.interview_transcripts as InterviewTranscript[]) || null,
   }
 }
 
@@ -140,7 +142,8 @@ export function useUpdateCandidate() {
         'name', 'email', 'phone', 'position', 'source', 'rating',
         'resume_url', 'notes', 'whatnot_username', 'instagram_handle',
         'tiktok_handle', 'availability', 'experience', 'archived',
-        'interview_date', 'scorecard', 'calendly_event_id'
+        'interview_date', 'scorecard', 'calendly_event_id',
+        'interview_feedback', 'interview_transcripts'
       ]
 
       fields.forEach(field => {
@@ -375,6 +378,166 @@ export function useScheduleInterview() {
       queryClient.invalidateQueries({ queryKey: ['candidate', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['activity'] })
       toast.success('Interview scheduled')
+    },
+  })
+}
+
+export function useUpdateInterviewFeedback() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, feedback, candidateName }: { id: string; feedback: InterviewFeedback; candidateName?: string }) => {
+      const { data, error } = await supabase
+        .from('candidates')
+        .update({
+          interview_feedback: feedback,
+          updated_at: new Date().toISOString(),
+        } as never)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      await supabase.from('activity_log').insert({
+        candidate_id: id,
+        action: 'interview_feedback_added',
+        details: { feedback, name: candidateName },
+      } as never)
+
+      return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['candidates'] })
+      queryClient.invalidateQueries({ queryKey: ['candidate', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['activity'] })
+      const feedbackLabels = { good: 'Good', bad: 'Bad', meh: 'Meh' }
+      toast.success(`Marked interview as ${feedbackLabels[variables.feedback]}`)
+    },
+  })
+}
+
+export function useUploadTranscript() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, file, candidateName }: { id: string; file: File; candidateName?: string }) => {
+      // Read file content
+      const content = await file.text()
+
+      // Get current transcripts
+      const { data: candidate, error: fetchError } = await supabase
+        .from('candidates')
+        .select('interview_transcripts')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      const currentTranscripts = ((candidate as Record<string, unknown>)?.interview_transcripts as InterviewTranscript[]) || []
+
+      const newTranscript: InterviewTranscript = {
+        id: crypto.randomUUID(),
+        filename: file.name,
+        file_url: null,
+        content,
+        uploaded_at: new Date().toISOString(),
+        ai_analysis: null,
+      }
+
+      const { data, error } = await supabase
+        .from('candidates')
+        .update({
+          interview_transcripts: [...currentTranscripts, newTranscript],
+          updated_at: new Date().toISOString(),
+        } as never)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      await supabase.from('activity_log').insert({
+        candidate_id: id,
+        action: 'transcript_uploaded',
+        details: { filename: file.name, name: candidateName },
+      } as never)
+
+      return { data, transcriptId: newTranscript.id }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['candidates'] })
+      queryClient.invalidateQueries({ queryKey: ['candidate', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['activity'] })
+      toast.success('Transcript uploaded')
+    },
+    onError: (error) => {
+      toast.error('Failed to upload transcript: ' + (error as Error).message)
+    },
+  })
+}
+
+export function useAnalyzeTranscript() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, transcriptId, candidateName }: { id: string; transcriptId: string; candidateName?: string }) => {
+      // Get current transcripts
+      const { data: candidate, error: fetchError } = await supabase
+        .from('candidates')
+        .select('interview_transcripts, name, position')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      const candidateData = candidate as Record<string, unknown>
+      const transcripts = (candidateData.interview_transcripts as InterviewTranscript[]) || []
+      const transcript = transcripts.find(t => t.id === transcriptId)
+
+      if (!transcript) throw new Error('Transcript not found')
+
+      // Call the analyze function
+      const { analyzeTranscript } = await import('@/lib/analyzeTranscript')
+      const analysis = await analyzeTranscript(
+        transcript.content,
+        candidateData.name as string,
+        candidateData.position as string | null
+      )
+
+      // Update the transcript with analysis
+      const updatedTranscripts = transcripts.map(t =>
+        t.id === transcriptId ? { ...t, ai_analysis: analysis } : t
+      )
+
+      const { data, error } = await supabase
+        .from('candidates')
+        .update({
+          interview_transcripts: updatedTranscripts,
+          updated_at: new Date().toISOString(),
+        } as never)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      await supabase.from('activity_log').insert({
+        candidate_id: id,
+        action: 'transcript_analyzed',
+        details: { transcriptId, name: candidateName },
+      } as never)
+
+      return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['candidates'] })
+      queryClient.invalidateQueries({ queryKey: ['candidate', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['activity'] })
+      toast.success('Transcript analyzed')
+    },
+    onError: (error) => {
+      toast.error('Failed to analyze transcript: ' + (error as Error).message)
     },
   })
 }

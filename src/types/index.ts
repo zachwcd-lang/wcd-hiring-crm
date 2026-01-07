@@ -21,6 +21,27 @@ export interface Scorecard {
   overall_notes?: string
 }
 
+// Interview Feedback Types
+export type InterviewFeedback = 'good' | 'bad' | 'meh'
+
+export interface TranscriptAnalysis {
+  summary: string
+  key_points: string[]
+  strengths: string[]
+  concerns: string[]
+  recommendation: string
+  analyzed_at: string
+}
+
+export interface InterviewTranscript {
+  id: string
+  filename: string
+  file_url: string | null
+  content: string
+  uploaded_at: string
+  ai_analysis: TranscriptAnalysis | null
+}
+
 // AI Screening Types
 export type AIRecommendation = 'STRONG_YES' | 'YES' | 'MAYBE' | 'LEAN_NO' | 'NO'
 
@@ -102,6 +123,9 @@ export interface Candidate {
   ai_analysis: AIAnalysis | null
   screening_answers: ScreeningAnswers | null
   ai_screened_at: string | null
+  // Interview feedback & transcripts
+  interview_feedback: InterviewFeedback | null
+  interview_transcripts: InterviewTranscript[] | null
 }
 
 export interface PositionRecord {
