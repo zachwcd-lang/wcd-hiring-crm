@@ -1,0 +1,434 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+/* =============================================================================
+   STREAMLINE ATS - "Ice White Precision" Design System
+   A hyper-light, frosted, medical-grade aesthetic
+   ============================================================================= */
+
+:root {
+  /* Core Backgrounds - Alice Blue tint base */
+  --background: #F8FAFC;
+  --background-surface: #FFFFFF;
+  --background-elevated: #FFFFFF;
+  --background-frosted: rgba(255, 255, 255, 0.8);
+  --background-glass: rgba(248, 250, 252, 0.7);
+
+  /* Borders - Barely there */
+  --border: #E2E8F0;
+  --border-subtle: #F1F5F9;
+  --border-focus: #3B82F6;
+
+  /* Text Hierarchy */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --text-faint: #CBD5E1;
+
+  /* Accent Colors */
+  --accent-blue: #3B82F6;
+  --accent-blue-light: #EFF6FF;
+  --accent-blue-hover: #2563EB;
+  --accent-emerald: #10B981;
+  --accent-emerald-light: #ECFDF5;
+
+  /* Status Colors - Soft, medical-grade */
+  --status-new: #3B82F6;
+  --status-new-bg: #EFF6FF;
+  --status-screening: #8B5CF6;
+  --status-screening-bg: #F5F3FF;
+  --status-interview: #10B981;
+  --status-interview-bg: #ECFDF5;
+  --status-offer: #F59E0B;
+  --status-offer-bg: #FFFBEB;
+  --status-hired: #059669;
+  --status-hired-bg: #D1FAE5;
+  --status-rejected: #EF4444;
+  --status-rejected-bg: #FEF2F2;
+
+  /* Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* Shadows - Soft, ice-blue tinted */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --shadow-xl: 0 16px 48px rgba(15, 23, 42, 0.12);
+  --shadow-glow-blue: 0 0 20px rgba(59, 130, 246, 0.15);
+  --shadow-glow-emerald: 0 0 20px rgba(16, 185, 129, 0.15);
+
+  /* Glassmorphism */
+  --glass-blur: blur(20px);
+  --glass-saturate: saturate(180%);
+
+  /* Transitions */
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* shadcn compatibility */
+  --radius: 6px;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+  --primary: #3B82F6;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F1F5F9;
+  --secondary-foreground: #0F172A;
+  --muted: #F8FAFC;
+  --muted-foreground: #64748B;
+  --accent: #EFF6FF;
+  --accent-foreground: #3B82F6;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --input: #E2E8F0;
+  --ring: #3B82F6;
+  --chart-1: #3B82F6;
+  --chart-2: #10B981;
+  --chart-3: #F59E0B;
+  --chart-4: #8B5CF6;
+  --chart-5: #EC4899;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #3B82F6;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EFF6FF;
+  --sidebar-accent-foreground: #3B82F6;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #3B82F6;
+}
+
+@theme inline {
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* =============================================================================
+   Base Styles
+   ============================================================================= */
+
+html {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Mono font for technical data */
+.font-mono {
+  font-family: 'Geist Mono', 'SF Mono', Menlo, monospace;
+}
+
+/* =============================================================================
+   Typography Scale
+   ============================================================================= */
+
+.text-title-lg { font-size: 24px; font-weight: 600; line-height: 1.2; letter-spacing: -0.025em; }
+.text-title { font-size: 18px; font-weight: 600; line-height: 1.25; letter-spacing: -0.02em; }
+.text-subtitle { font-size: 14px; font-weight: 500; line-height: 1.35; }
+.text-body { font-size: 14px; font-weight: 400; line-height: 1.5; }
+.text-small { font-size: 13px; font-weight: 400; line-height: 1.5; }
+.text-caption { font-size: 12px; font-weight: 400; line-height: 1.5; }
+.text-micro { font-size: 11px; font-weight: 500; line-height: 1.4; }
+.text-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+/* =============================================================================
+   Glass / Frosted Effects
+   ============================================================================= */
+
+.glass {
+  background: var(--background-frosted);
+  backdrop-filter: var(--glass-blur) var(--glass-saturate);
+  -webkit-backdrop-filter: var(--glass-blur) var(--glass-saturate);
+}
+
+.glass-heavy {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+}
+
+.glass-surface {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* =============================================================================
+   Custom Scrollbar - Minimal
+   ============================================================================= */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #CBD5E1;
+}
+
+/* =============================================================================
+   Talent Inbox Row States
+   ============================================================================= */
+
+.row-unread {
+  background: var(--background-surface);
+  border-left: 3px solid var(--accent-blue);
+}
+
+.row-read {
+  background: var(--background);
+}
+
+.row-hover {
+  transition: background-color var(--transition-fast);
+}
+
+.row-hover:hover {
+  background: #F1F5F9;
+}
+
+.row-selected {
+  background: var(--accent-blue-light);
+}
+
+/* =============================================================================
+   Frosted Pills / Badges
+   ============================================================================= */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 9999px;
+  backdrop-filter: blur(8px);
+}
+
+.pill-match {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.pill-status {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563EB;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* =============================================================================
+   Status Badge Colors - Medical Grade
+   ============================================================================= */
+
+.status-new {
+  background: var(--status-new-bg);
+  color: var(--status-new);
+}
+.status-phone_screen, .status-screening {
+  background: var(--status-screening-bg);
+  color: var(--status-screening);
+}
+.status-interview {
+  background: var(--status-interview-bg);
+  color: var(--status-interview);
+}
+.status-offer {
+  background: var(--status-offer-bg);
+  color: var(--status-offer);
+}
+.status-hired {
+  background: var(--status-hired-bg);
+  color: var(--status-hired);
+}
+.status-rejected {
+  background: var(--status-rejected-bg);
+  color: var(--status-rejected);
+}
+
+/* =============================================================================
+   Keyboard Shortcuts
+   ============================================================================= */
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  min-width: 20px;
+  box-shadow: 0 1px 0 var(--border);
+}
+
+/* =============================================================================
+   Focus States - Blue ring
+   ============================================================================= */
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background-surface), 0 0 0 4px var(--accent-blue);
+}
+
+/* =============================================================================
+   Action Bar Glow
+   ============================================================================= */
+
+.action-bar-glow {
+  box-shadow:
+    0 -4px 20px rgba(59, 130, 246, 0.08),
+    0 -1px 3px rgba(15, 23, 42, 0.05);
+}
+
+/* =============================================================================
+   Slideout Backdrop
+   ============================================================================= */
+
+.slideout-backdrop {
+  background: rgba(15, 23, 42, 0.1);
+  backdrop-filter: blur(4px) saturate(100%);
+  -webkit-backdrop-filter: blur(4px) saturate(100%);
+}
+
+/* =============================================================================
+   Animations
+   ============================================================================= */
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpFade {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-slide-up-fade {
+  animation: slideUpFade 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.15s ease-out forwards;
+}
+
+/* =============================================================================
+   Base Layer
+   ============================================================================= */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
