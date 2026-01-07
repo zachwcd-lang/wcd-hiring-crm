@@ -236,7 +236,7 @@ export function CandidatePanel() {
   return (
     <Dialog open={!!selectedCandidateId} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent
-        className="max-w-4xl w-[95vw] h-[90vh] max-h-[900px] p-0 overflow-hidden flex flex-col"
+        className="max-w-6xl w-[98vw] h-[95vh] max-h-[1200px] p-0 overflow-auto flex flex-col"
         showCloseButton={false}
       >
         <VisuallyHidden>
@@ -358,7 +358,7 @@ export function CandidatePanel() {
                 </TabsTrigger>
               </TabsList>
 
-              <ScrollArea className="flex-1">
+              <ScrollArea className="flex-1 overflow-auto">
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="p-8 m-0 space-y-6">
                   {/* Contact Info */}
