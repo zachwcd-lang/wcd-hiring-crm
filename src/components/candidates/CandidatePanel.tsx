@@ -333,38 +333,38 @@ export function CandidatePanel() {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-              <TabsList className="px-6 pt-3 pb-0 justify-start bg-transparent border-b border-[var(--border)] rounded-none h-auto gap-6">
+              <TabsList className="px-4 pt-3 pb-0 justify-start bg-transparent border-b border-[var(--border)] rounded-none h-auto gap-4 overflow-x-auto flex-nowrap">
                 <TabsTrigger
                   value="overview"
-                  className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-2"
+                  className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-1.5 shrink-0"
                 >
                   <User className="w-4 h-4" />
                   Overview
                 </TabsTrigger>
                 <TabsTrigger
                   value="activity"
-                  className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-2"
+                  className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-1.5 shrink-0"
                 >
                   <Activity className="w-4 h-4" />
                   Activity
                 </TabsTrigger>
                 <TabsTrigger
                   value="interview"
-                  className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-2"
+                  className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-1.5 shrink-0"
                 >
                   <Video className="w-4 h-4" />
                   Interview
                 </TabsTrigger>
                 <TabsTrigger
                   value="documents"
-                  className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-2"
+                  className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-1.5 shrink-0"
                 >
                   <File className="w-4 h-4" />
-                  Documents
+                  Docs
                 </TabsTrigger>
                 <TabsTrigger
                   value="ai"
-                  className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-2"
+                  className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-1.5 shrink-0"
                 >
                   <Sparkles className="w-4 h-4" />
                   AI
