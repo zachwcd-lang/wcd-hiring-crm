@@ -30,7 +30,7 @@ import {
   ChevronUp,
 } from 'lucide-react'
 import { AIScreeningTab } from './AIScreeningTab'
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -234,22 +234,21 @@ export function CandidatePanel() {
   const isStreamer = candidate?.position?.toLowerCase().includes('streamer')
 
   return (
-    <Sheet open={!!selectedCandidateId} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent
-        side="right"
-        className="w-[480px] sm:max-w-[480px] p-0 border-l border-[var(--border)] bg-[var(--background)] shadow-2xl"
-        aria-describedby={undefined}
+    <Dialog open={!!selectedCandidateId} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent
+        className="max-w-4xl w-[95vw] h-[90vh] max-h-[900px] p-0 overflow-hidden flex flex-col"
+        showCloseButton={false}
       >
         <VisuallyHidden>
-          <SheetTitle>Candidate Details</SheetTitle>
+          <DialogTitle>Candidate Details</DialogTitle>
         </VisuallyHidden>
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full bg-[var(--background)]">
+          <div className="flex flex-col items-center justify-center flex-1 bg-[var(--background)]">
             <div className="w-8 h-8 border-2 border-[#635BFF] border-t-transparent rounded-full animate-spin mb-4" />
             <div className="text-sm text-[var(--text-muted)]">Loading candidate...</div>
           </div>
         ) : !candidate ? (
-          <div className="flex flex-col items-center justify-center h-full bg-[var(--background)]">
+          <div className="flex flex-col items-center justify-center flex-1 bg-[var(--background)]">
             <div className="text-sm text-[var(--text-muted)]">Candidate not found</div>
             <button
               onClick={handleClose}
@@ -259,50 +258,55 @@ export function CandidatePanel() {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full overflow-hidden">
             {/* Header */}
-            <div className="px-6 py-5 border-b border-[var(--border)]">
+            <div className="px-8 py-6 border-b border-[var(--border)] bg-[var(--background)]">
               {/* Close button */}
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-[var(--background-muted)] flex items-center justify-center text-base font-medium text-[var(--text-secondary)]">
+              <div className="flex justify-between items-start mb-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-[var(--background-muted)] flex items-center justify-center text-lg font-medium text-[var(--text-secondary)]">
                     {getInitials(candidate.name)}
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+                    <h2 className="text-xl font-semibold text-[var(--text-primary)]">
                       {candidate.name}
                     </h2>
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-2 mt-1">
                       {candidate.position && (
                         <span className="text-sm text-[var(--text-muted)]">{candidate.position}</span>
+                      )}
+                      {candidate.email && (
+                        <span className="text-sm text-[var(--text-muted)]">• {candidate.email}</span>
                       )}
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={handleClose}
-                  className="p-1.5 rounded-md hover:bg-[var(--background-muted)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+                  className="p-2 rounded-lg hover:bg-[var(--background-muted)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Rating */}
-              <div className="flex items-center gap-3 mb-4">
-                <StarRating rating={candidate.rating || 0} onChange={handleRatingChange} />
-                <span className="text-xs text-[var(--text-muted)]">
-                  {getDaysInPipeline(candidate.created_at)} days in pipeline
-                </span>
+              {/* Rating & Stage Row */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <StarRating rating={candidate.rating || 0} onChange={handleRatingChange} />
+                  <span className="text-sm text-[var(--text-muted)]">
+                    {getDaysInPipeline(candidate.created_at)} days in pipeline
+                  </span>
+                </div>
               </div>
 
               {/* Stage Pills */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2 mt-4">
                 {STAGES.map((stage) => (
                   <button
                     key={stage.id}
                     onClick={() => handleStageChange(stage.id)}
                     className={cn(
-                      'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                      'px-4 py-2 rounded-lg text-sm font-medium transition-all',
                       candidate.stage === stage.id
                         ? `status-${stage.id}`
                         : 'bg-[var(--background-subtle)] text-[var(--text-muted)] hover:bg-[var(--background-muted)] hover:text-[var(--text-secondary)]'
@@ -316,7 +320,7 @@ export function CandidatePanel() {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-              <TabsList className="px-4 pt-3 pb-0 justify-start bg-transparent border-b border-[var(--border)] rounded-none h-auto gap-4 overflow-x-auto flex-nowrap">
+              <TabsList className="px-8 pt-4 pb-0 justify-start bg-transparent border-b border-[var(--border)] rounded-none h-auto gap-6 overflow-x-auto flex-nowrap">
                 <TabsTrigger
                   value="overview"
                   className="pb-3 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[var(--accent)] rounded-none text-sm flex items-center gap-1.5 shrink-0"
@@ -356,7 +360,7 @@ export function CandidatePanel() {
 
               <ScrollArea className="flex-1">
                 {/* Overview Tab */}
-                <TabsContent value="overview" className="p-6 m-0 space-y-6">
+                <TabsContent value="overview" className="p-8 m-0 space-y-6">
                   {/* Contact Info */}
                   <div className="space-y-3">
                     <h3 className="text-label text-[var(--text-muted)]">Contact</h3>
@@ -474,7 +478,7 @@ export function CandidatePanel() {
                 </TabsContent>
 
                 {/* Activity Tab */}
-                <TabsContent value="activity" className="p-6 m-0 space-y-6">
+                <TabsContent value="activity" className="p-8 m-0 space-y-6">
                   {/* Add Note */}
                   <div className="space-y-3">
                     <Textarea
@@ -534,7 +538,7 @@ export function CandidatePanel() {
                 </TabsContent>
 
                 {/* Interview Tab */}
-                <TabsContent value="interview" className="p-6 m-0 space-y-6">
+                <TabsContent value="interview" className="p-8 m-0 space-y-6">
                   {/* Scheduled Interview */}
                   {candidate.interview_date && (
                     <div className="p-4 rounded-lg bg-violet-50 border border-violet-100">
@@ -793,7 +797,7 @@ export function CandidatePanel() {
                 </TabsContent>
 
                 {/* Documents Tab */}
-                <TabsContent value="documents" className="p-6 m-0 space-y-6">
+                <TabsContent value="documents" className="p-8 m-0 space-y-6">
                   {/* Resume */}
                   <div className="space-y-3">
                     <h3 className="text-label text-[var(--text-muted)]">Resume</h3>
@@ -837,7 +841,7 @@ export function CandidatePanel() {
                 </TabsContent>
 
                 {/* AI Screening Tab */}
-                <TabsContent value="ai" className="p-6 m-0">
+                <TabsContent value="ai" className="p-8 m-0">
                   <AIScreeningTab
                     aiAnalysis={candidate.ai_analysis}
                     screeningAnswers={candidate.screening_answers}
@@ -848,7 +852,7 @@ export function CandidatePanel() {
             </Tabs>
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }
