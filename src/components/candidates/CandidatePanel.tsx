@@ -236,7 +236,7 @@ export function CandidatePanel() {
   return (
     <Dialog open={!!selectedCandidateId} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent
-        className="max-w-6xl w-[98vw] h-[95vh] max-h-[1200px] p-0 overflow-auto flex flex-col"
+        className="max-w-[1600px] w-[calc(100vw-48px)] h-[calc(100vh-48px)] p-0 overflow-auto flex flex-col"
         showCloseButton={false}
       >
         <VisuallyHidden>
