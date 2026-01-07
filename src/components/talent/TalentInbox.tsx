@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, format, isValid } from 'date-fns'
 import {
   Search,
   Star,
@@ -9,6 +9,9 @@ import {
   ArrowRight,
   X,
   Archive,
+  ChevronDown,
+  Calendar,
+  ArrowUpDown,
 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -25,6 +28,28 @@ import { STAGES, getInitials, type Stage } from '@/types'
 import { cn } from '@/lib/utils'
 import { RapidReviewDrawer } from './RapidReviewDrawer'
 import { ActionBar } from './ActionBar'
+
+type SortOption = 'newest' | 'oldest' | 'match_high' | 'match_low' | 'interview_soonest'
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'newest', label: 'Newest First' },
+  { value: 'oldest', label: 'Oldest First' },
+  { value: 'match_high', label: 'Highest Match' },
+  { value: 'match_low', label: 'Lowest Match' },
+  { value: 'interview_soonest', label: 'Soonest Interview' },
+]
+
+// Format interview date
+function formatInterviewDate(date: string | null): string | null {
+  if (!date) return null
+  try {
+    const d = new Date(date)
+    if (!isValid(d)) return null
+    return format(d, 'MMM d, h:mm a')
+  } catch {
+    return null
+  }
+}
 
 // Match score badge component
 function MatchScoreBadge({ score }: { score?: number | null }) {
@@ -91,12 +116,13 @@ export function TalentInbox() {
 
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [sortBy, setSortBy] = useState<SortOption>('newest')
 
-  // Filter candidates
+  // Filter and sort candidates
   const filteredCandidates = useMemo(() => {
     if (!candidates) return []
 
-    return candidates.filter(c => {
+    const filtered = candidates.filter(c => {
       if (c.archived) return false
       if (searchQuery) {
         const search = searchQuery.toLowerCase()
@@ -105,8 +131,30 @@ export function TalentInbox() {
           c.position?.toLowerCase().includes(search)
       }
       return true
-    }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-  }, [candidates, searchQuery])
+    })
+
+    // Sort based on selected option
+    return filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        case 'match_high':
+          return (b.ai_score || 0) - (a.ai_score || 0)
+        case 'match_low':
+          return (a.ai_score || 0) - (b.ai_score || 0)
+        case 'interview_soonest': {
+          // Put candidates with interviews first, sorted by date
+          const aDate = a.interview_date ? new Date(a.interview_date).getTime() : Infinity
+          const bDate = b.interview_date ? new Date(b.interview_date).getTime() : Infinity
+          return aDate - bDate
+        }
+        default:
+          return 0
+      }
+    })
+  }, [candidates, searchQuery, sortBy])
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -188,23 +236,47 @@ export function TalentInbox() {
             </div>
           </div>
 
-          {/* Search Bar - Raycast style */}
-          <div className="relative max-w-xl">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" strokeWidth={1.5} />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
-              placeholder="Search candidates..."
-              className={cn(
-                'pl-10 h-10 bg-white border-transparent text-sm transition-all',
-                isSearchFocused
-                  ? 'border-[var(--accent-blue)] ring-2 ring-[var(--accent-blue)]/20'
-                  : 'hover:border-[var(--border)]'
-              )}
-            />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2">/</kbd>
+          {/* Search Bar and Sort */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1 max-w-xl">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" strokeWidth={1.5} />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
+                placeholder="Search candidates..."
+                className={cn(
+                  'pl-10 h-10 bg-white border-transparent text-sm transition-all',
+                  isSearchFocused
+                    ? 'border-[var(--accent-blue)] ring-2 ring-[var(--accent-blue)]/20'
+                    : 'hover:border-[var(--border)]'
+                )}
+              />
+              <kbd className="absolute right-3 top-1/2 -translate-y-1/2">/</kbd>
+            </div>
+
+            {/* Sort Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="inline-flex items-center gap-2 px-3 py-2 h-10 text-sm font-medium text-[var(--text-secondary)] bg-white border border-[var(--border)] rounded-lg hover:bg-slate-50 transition-colors">
+                  <ArrowUpDown className="w-4 h-4" strokeWidth={1.5} />
+                  {SORT_OPTIONS.find(o => o.value === sortBy)?.label}
+                  <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" strokeWidth={1.5} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {SORT_OPTIONS.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => setSortBy(option.value)}
+                    className={cn(sortBy === option.value && 'bg-[var(--accent-blue-light)] text-[var(--accent-blue)]')}
+                  >
+                    {option.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -224,14 +296,17 @@ export function TalentInbox() {
               <th className="w-24 px-4 py-3 text-left">
                 <span className="text-label">Match</span>
               </th>
-              <th className="px-4 py-3 text-left min-w-[240px]">
+              <th className="px-4 py-3 text-left min-w-[200px]">
                 <span className="text-label">Candidate</span>
               </th>
-              <th className="px-4 py-3 text-left w-[300px]">
+              <th className="px-4 py-3 text-left w-[280px]">
                 <span className="text-label">AI Vibe</span>
               </th>
               <th className="w-28 px-4 py-3 text-left">
                 <span className="text-label">Stage</span>
+              </th>
+              <th className="w-32 px-4 py-3 text-left">
+                <span className="text-label">Interview</span>
               </th>
               <th className="w-20 px-4 py-3 text-right">
                 <span className="text-label">Activity</span>
@@ -258,13 +333,14 @@ export function TalentInbox() {
                     </td>
                     <td className="px-4 py-3"><div className="w-48 h-4 bg-slate-100 rounded animate-pulse" /></td>
                     <td className="px-4 py-3"><div className="w-16 h-5 bg-slate-100 rounded animate-pulse" /></td>
+                    <td className="px-4 py-3"><div className="w-20 h-4 bg-slate-100 rounded animate-pulse" /></td>
                     <td className="px-4 py-3"><div className="w-10 h-4 bg-slate-100 rounded animate-pulse ml-auto" /></td>
                     <td className="px-4 py-3"></td>
                   </tr>
                 ))
               ) : filteredCandidates.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-16">
+                  <td colSpan={8} className="text-center py-16">
                     <div className="flex flex-col items-center">
                       <div className="w-16 h-16 rounded-2xl bg-[var(--accent-blue-light)] flex items-center justify-center mb-4">
                         <Sparkles className="w-8 h-8 text-[var(--accent-blue)]" strokeWidth={1.5} />
@@ -328,6 +404,16 @@ export function TalentInbox() {
                       </td>
                       <td className="px-4 py-3">
                         <StagePill stage={candidate.stage} />
+                      </td>
+                      <td className="px-4 py-3">
+                        {candidate.interview_date ? (
+                          <div className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                            <Calendar className="w-3.5 h-3.5 text-[var(--accent-blue)]" strokeWidth={1.5} />
+                            <span className="font-medium">{formatInterviewDate(candidate.interview_date)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-[var(--text-muted)]">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <RelativeTime date={candidate.stage_changed_at || candidate.created_at} />

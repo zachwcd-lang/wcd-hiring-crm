@@ -152,7 +152,7 @@ export function RapidReviewDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 w-[600px] z-50 bg-[var(--background)] border-l border-[var(--border)] shadow-xl overflow-hidden flex flex-col"
+            className="fixed right-0 top-0 bottom-0 w-[720px] z-50 bg-[var(--background)] border-l border-[var(--border)] shadow-xl overflow-hidden flex flex-col"
           >
             {isLoading || !candidate ? (
               <div className="flex-1 flex items-center justify-center">
@@ -336,8 +336,8 @@ export function RapidReviewDrawer() {
                   {/* Screening Answers */}
                   {candidate.screening_answers && Object.keys(candidate.screening_answers).length > 0 && (
                     <div>
-                      <h3 className="text-label mb-3">Screening Answers</h3>
-                      <div className="space-y-3">
+                      <h3 className="text-label mb-4">Screening Answers</h3>
+                      <div className="space-y-4">
                         {Object.entries(candidate.screening_answers)
                           .filter(([_, value]) => value && value.trim() !== '')
                           .map(([key, value]) => {
@@ -356,9 +356,9 @@ export function RapidReviewDrawer() {
                             const label = labelMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 
                             return (
-                              <div key={key} className="p-3 rounded-lg bg-slate-50">
-                                <span className="text-xs font-medium text-[var(--text-muted)]">{label}</span>
-                                <p className="text-sm text-[var(--text-secondary)] mt-1 whitespace-pre-wrap">
+                              <div key={key} className="p-4 rounded-xl bg-white border border-[var(--border)]">
+                                <span className="text-xs font-semibold text-[var(--accent-blue)] uppercase tracking-wide">{label}</span>
+                                <p className="text-sm text-[var(--text-primary)] mt-2 whitespace-pre-wrap leading-relaxed">
                                   {value}
                                 </p>
                               </div>
