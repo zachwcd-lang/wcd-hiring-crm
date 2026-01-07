@@ -141,6 +141,7 @@ export function CandidatePanel() {
   const [activeTab, setActiveTab] = useState('overview')
   const [expandedTranscriptId, setExpandedTranscriptId] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [pastedTranscript, setPastedTranscript] = useState('')
 
   useEffect(() => {
     if (candidate?.scorecard) {
@@ -226,6 +227,14 @@ export function CandidatePanel() {
       return
     }
     uploadTranscript.mutate({ id: candidate.id, file, candidateName: candidate.name })
+  }
+
+  const handlePasteTranscript = () => {
+    if (!candidate || !pastedTranscript.trim()) return
+    const blob = new Blob([pastedTranscript], { type: 'text/plain' })
+    const file = new File([blob], `Transcript-${new Date().toISOString().slice(0, 10)}.txt`, { type: 'text/plain' })
+    uploadTranscript.mutate({ id: candidate.id, file, candidateName: candidate.name })
+    setPastedTranscript('')
   }
 
   const handleAnalyzeTranscript = (transcriptId: string) => {
@@ -674,40 +683,27 @@ export function CandidatePanel() {
                       <h3 className="text-label text-[var(--text-muted)]">Interview Transcripts</h3>
                     </div>
 
-                    {/* Upload Dropzone */}
-                    <div
-                      onDrop={handleDrop}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      className={cn(
-                        'flex flex-col items-center justify-center py-6 px-4 rounded-lg border-2 border-dashed transition-colors text-center',
-                        isDragging ? 'border-[var(--accent)] bg-[var(--accent-subtle)]' : 'border-[var(--border)]',
-                        uploadTranscript.isPending && 'opacity-50 pointer-events-none'
-                      )}
-                    >
-                      {uploadTranscript.isPending ? (
-                        <>
-                          <Loader2 className="w-8 h-8 text-[var(--accent)] mb-3 animate-spin" />
-                          <p className="text-sm text-[var(--text-muted)]">Uploading...</p>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-8 h-8 text-[var(--text-muted)] mb-3" />
-                          <p className="text-sm text-[var(--text-muted)]">Drop your Granola transcript here</p>
-                          <p className="text-xs text-[var(--text-muted)] mt-1">.txt or .md files</p>
-                          <label className="mt-3">
-                            <input
-                              type="file"
-                              accept=".txt,.md"
-                              onChange={(e) => handleTranscriptUpload(e.target.files)}
-                              className="hidden"
-                            />
-                            <span className="px-3 py-1.5 text-xs font-medium text-[var(--accent)] bg-[var(--accent-subtle)] rounded-md cursor-pointer hover:bg-[var(--accent-subtle)]/80">
-                              Browse files
-                            </span>
-                          </label>
-                        </>
-                      )}
+                    {/* Paste Transcript */}
+                    <div className="space-y-2">
+                      <Textarea
+                        placeholder="Paste your Granola transcript here..."
+                        value={pastedTranscript}
+                        onChange={(e) => setPastedTranscript(e.target.value)}
+                        className="min-h-[100px] resize-none bg-[var(--background-subtle)] border-[var(--border)] text-sm"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handlePasteTranscript}
+                        disabled={!pastedTranscript.trim() || uploadTranscript.isPending}
+                        className="bg-[var(--accent)] hover:bg-[var(--accent-hover)]"
+                      >
+                        {uploadTranscript.isPending ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Upload className="w-4 h-4 mr-2" />
+                        )}
+                        Save Transcript
+                      </Button>
                     </div>
 
                     {/* Transcript List */}
