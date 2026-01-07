@@ -140,7 +140,6 @@ export function CandidatePanel() {
   const [scorecard, setScorecard] = useState<Scorecard>({})
   const [activeTab, setActiveTab] = useState('overview')
   const [expandedTranscriptId, setExpandedTranscriptId] = useState<string | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
   const [pastedTranscript, setPastedTranscript] = useState('')
 
   useEffect(() => {
@@ -219,20 +218,10 @@ export function CandidatePanel() {
     updateInterviewFeedback.mutate({ id: candidate.id, feedback, candidateName: candidate.name })
   }
 
-  const handleTranscriptUpload = (files: FileList | null) => {
-    if (!candidate || !files || files.length === 0) return
-    const file = files[0]
-    if (!file.name.endsWith('.txt') && !file.name.endsWith('.md')) {
-      toast.error('Please upload a .txt or .md file')
-      return
-    }
-    uploadTranscript.mutate({ id: candidate.id, file, candidateName: candidate.name })
-  }
-
   const handlePasteTranscript = () => {
     if (!candidate || !pastedTranscript.trim()) return
     const blob = new Blob([pastedTranscript], { type: 'text/plain' })
-    const file = new File([blob], `Transcript-${new Date().toISOString().slice(0, 10)}.txt`, { type: 'text/plain' })
+    const file = new window.File([blob], `Transcript-${new Date().toISOString().slice(0, 10)}.txt`, { type: 'text/plain' })
     uploadTranscript.mutate({ id: candidate.id, file, candidateName: candidate.name })
     setPastedTranscript('')
   }
@@ -240,21 +229,6 @@ export function CandidatePanel() {
   const handleAnalyzeTranscript = (transcriptId: string) => {
     if (!candidate) return
     analyzeTranscript.mutate({ id: candidate.id, transcriptId, candidateName: candidate.name })
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    handleTranscriptUpload(e.dataTransfer.files)
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  const handleDragLeave = () => {
-    setIsDragging(false)
   }
 
   const isStreamer = candidate?.position?.toLowerCase().includes('streamer')
