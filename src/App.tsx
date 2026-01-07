@@ -11,6 +11,7 @@ import { Calendar } from '@/pages/Calendar'
 import { EmailTemplates } from '@/pages/EmailTemplates'
 import { Settings } from '@/pages/Settings'
 import { AddCandidateModal } from '@/components/candidates/AddCandidateModal'
+import { CandidatePanel } from '@/components/candidates/CandidatePanel'
 import { CommandPalette } from '@/components/common/CommandPalette'
 import { ShortcutsHelp } from '@/components/common/ShortcutsHelp'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
@@ -47,6 +48,7 @@ function AppContent() {
       <CommandPalette />
       <ShortcutsHelp />
       <AddCandidateModal />
+      <CandidatePanel />
       <Toaster position="bottom-right" richColors />
     </>
   )
